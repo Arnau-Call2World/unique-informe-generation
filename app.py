@@ -16,10 +16,12 @@ mes = st.text_input("Mes (ej. 'ENERO')")
 if st.button("Generar informe") and all([csv1, csv2, csv3, excel, mes]):
     with st.spinner("Generando informe..."):
         # Llama a tu función adaptada para aceptar archivos en memoria
-        word_file, excel_file = main(
-            mes, csv1, csv2, csv3, excel
-        )
-
+        try:
+            word_file, excel_file = main(mes, csv1, csv2, csv3, excel)
+            print("Generado correctamente:", word_file, excel_file)
+        except Exception as e:
+            st.error(f"Error al generar el informe: {e}")
+            
         st.success("¡Informe generado!")
         st.download_button("📥 Descargar Word", word_file, file_name="informe.docx")
         st.download_button(
