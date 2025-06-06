@@ -10,9 +10,10 @@ import time
 def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
     """
     Extrae y limpia la tabla de resumen por categorías desde un DataFrame.
-    Incluye 'Total', marca si es total.
+    Incluye 'Total', marca si es total. Limpia porcentajes con o sin espacio.
     """
 
+    # Buscar el índice donde aparece "Total" (marca fin de tabla útil)
     total_idx = df[df.iloc[:, 0].astype(str).str.contains("Total", case=False, na=False)].index
 
     if total_idx.empty:
@@ -29,28 +30,33 @@ def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
         st.error(f"❌ Error al extraer columnas específicas: {e}")
         return pd.DataFrame()
 
+    # Marcar la fila "Total" como EsTotal
     tabla["EsTotal"] = tabla["Categoría"].astype(str).str.contains("Total", case=False, na=False)
 
-    # Vista previa antes del filtro de porcentaje
-    st.write("📋 Tabla histórica antes del filtro:", tabla.head())
+    # Mostrar preview antes del filtrado
+    st.write("📋 Tabla antes del filtrado de 'Atendidas_%':")
+    st.dataframe(tabla)
 
-    # Filtrar las filas que tienen el % en formato válido
+    # Filtrar solo filas con símbolo %
     tabla = tabla[tabla["Atendidas_%"].astype(str).str.contains("%", na=False)]
 
     if tabla.empty:
-        st.warning("⚠️ Todas las filas fueron eliminadas tras filtrar Atendidas_% con '%'.")
+        st.warning("⚠️ Todas las filas fueron eliminadas tras filtrar Atendidas_% con '%'")
         return pd.DataFrame()
 
-    # Limpiar y convertir porcentaje
+    # Limpiar y convertir porcentaje a float
     tabla["Atendidas_%"] = (
         tabla["Atendidas_%"]
         .astype(str)
         .str.replace(",", ".")
-        .str.replace(" %", "", regex=False)
+        .str.replace("%", "", regex=False)
+        .str.strip()
         .astype(float)
     )
 
-    st.write("✅ Tabla histórica final:", tabla.head())
+    st.write("✅ Tabla final procesada:")
+    st.dataframe(tabla)
+
     return tabla.reset_index(drop=True)
 
 def extraer_tabla_categorias(path_excel: str) -> pd.DataFrame:
