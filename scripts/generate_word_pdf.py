@@ -149,9 +149,11 @@ def exportar_informe_word_y_pdf_por_bloques(
     return word_bytes
 
 def main(mes_actual, categorias_csv, dias_csv, franjas_csv, historico_xlsx):
-    meses_hasta_ahora = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO"]
+    MESES = [ "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+                       "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE" ]
     path_paquete = [categorias_csv, dias_csv, franjas_csv, historico_xlsx]
-    variables_informe, fig, tablas = generar_variables_informe(
+    meses_hasta_ahora = MESES[:MESES.index(mes_actual)+1]
+    variables_informe, fig, tablas, excel = generar_variables_informe(
         path_paquete,
         meses_hasta_ahora,
         mes_actual
@@ -179,7 +181,7 @@ def main(mes_actual, categorias_csv, dias_csv, franjas_csv, historico_xlsx):
         tabla_franjas=tablas['franjas'],
         fig=fig
     )
-    return word_path
+    return word_path, excel
 
 
 

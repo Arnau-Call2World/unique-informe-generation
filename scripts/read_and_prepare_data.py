@@ -1,7 +1,8 @@
 import pandas as pd
-from openpyxl import load_workbook
 from datetime import datetime
-
+from openpyxl import load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+from io import BytesIO
 
 
 def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
@@ -54,7 +55,7 @@ def extraer_tabla_categorias(path_excel: str) -> pd.DataFrame:
         .astype(float)
     )
 
-    return tabla.reset_index(drop=True)
+    return tabla.reset_index(drop=True), df
     
 
 import pandas as pd
@@ -107,8 +108,9 @@ def extraer_tabla_dias(path_excel: str) -> pd.DataFrame:
         dias.append(dia)
 
     tabla.insert(0, "Día", dias)
+    df.insert(0, "Día", dias)
 
-    return tabla.reset_index(drop=True)
+    return tabla.reset_index(drop=True), df
 
 
 
@@ -135,7 +137,7 @@ def extraer_tabla_franjas(path_excel: str) -> pd.DataFrame:
         .astype(float)
     )
 
-    return tabla.reset_index(drop=True)
+    return tabla.reset_index(drop=True), df
 
 def leer_tablas(path_paquete: str, meses: list[str]) -> dict:
     """
@@ -151,15 +153,51 @@ def leer_tablas(path_paquete: str, meses: list[str]) -> dict:
         df = pd.read_excel(path_excel_historico, sheet_name=m, header=None)
         tablas_mes[m] = extraer_tabla_historico(df)
 
+    categorias_filtrdo, df_categorias = extraer_tabla_categorias(path_excel_cateorias)
+    dias_filtrado, df_dias = extraer_tabla_dias(path_excel_dias)
+    franjas_filtrado, df_franjas = extraer_tabla_franjas(path_excel_franjas)
 
     tablas = {
-        "categorias": extraer_tabla_categorias(path_excel_cateorias),
-        "dias": extraer_tabla_dias(path_excel_dias),
-        "franjas": extraer_tabla_franjas(path_excel_franjas)
+        "categorias": categorias_filtrdo,
+        "dias": dias_filtrado,
+        "franjas": franjas_filtrado
     }
 
-    return tablas, tablas_mes
+    excel = append_dfs_to_excel_path(
+        path_excel_historico,
+        df_categorias,
+        df_dias,
+        df_franjas,
+        sheet_name=meses[-1]  # Último mes
+    )
 
+    return tablas, tablas_mes, excel
+
+
+def append_dfs_to_excel_path(excel_path: str, df1, df2, df3, sheet_name="Resumen") -> BytesIO:
+    # Load workbook from path
+    wb = load_workbook(filename=excel_path)
+
+    # If sheet exists, delete it
+    if sheet_name in wb.sheetnames:
+        del wb[sheet_name]
+
+    # Create new sheet
+    ws = wb.create_sheet(title=sheet_name)
+
+    # Write DataFrames with 3-row spacing
+    start_row = 1
+    for df in [df1, df2, df3]:
+        for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), start=start_row):
+            for c_idx, value in enumerate(row, start=1):
+                ws.cell(row=r_idx, column=c_idx, value=value)
+        start_row += len(df) + 4  # 3 blank rows + 1 header
+
+    # Save to BytesIO to return through Streamlit
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
 if __name__ == "__main__":
     # Ejemplo de uso
     MESES = [ "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",

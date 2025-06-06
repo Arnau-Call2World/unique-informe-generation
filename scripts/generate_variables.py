@@ -72,7 +72,7 @@ def generar_variables_informe(
     Genera las variables necesarias para el informe a partir de las tablas de categorías.
     """
 
-    tablas, tablas_mes = leer_tablas(path_paquete, meses)
+    tablas, tablas_mes, excel = leer_tablas(path_paquete, meses)
 
     categorias_df = tablas['categorias']
     categorias_anterior_df = tablas_mes[meses[-2]]
@@ -86,7 +86,7 @@ def generar_variables_informe(
 
     fig = generar_grafico_meses_barplot_dinamico(tablas_mes, meses)
 
-    return variables_informe , fig , tablas
+    return variables_informe , fig , tablas, excel
 
 if __name__ == "__main__":
     MESES = [ "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
