@@ -10,30 +10,47 @@ import time
 def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
     """
     Extrae y limpia la tabla de resumen por categorías desde un DataFrame.
-    Incluye 'Total', marca si es total y si la fila es roja en el Excel.
+    Incluye 'Total', marca si es total.
     """
 
-    end_row = df[df.iloc[:, 0].astype(str).str.contains("Total", case=False, na=False)].index.min()
-    tabla = df.iloc[1:end_row + 1, [0, 1, 4, 5, 6, 18, 19, 21]].copy()
-    tabla.columns = ["Categoría", "Recibidas", "Atendidas_num", "Atendidas_%", "Duracion",
-                     "Desborde_cantidad", "Desborde_tiempo", "Abandonadas"]
+    total_idx = df[df.iloc[:, 0].astype(str).str.contains("Total", case=False, na=False)].index
+
+    if total_idx.empty:
+        st.warning("⚠️ No se encontró ninguna fila con 'Total' en la primera columna.")
+        return pd.DataFrame()
+
+    end_row = total_idx.min()
+
+    try:
+        tabla = df.iloc[1:end_row + 1, [0, 1, 4, 5, 6, 18, 19, 21]].copy()
+        tabla.columns = ["Categoría", "Recibidas", "Atendidas_num", "Atendidas_%", "Duracion",
+                         "Desborde_cantidad", "Desborde_tiempo", "Abandonadas"]
+    except Exception as e:
+        st.error(f"❌ Error al extraer columnas específicas: {e}")
+        return pd.DataFrame()
 
     tabla["EsTotal"] = tabla["Categoría"].astype(str).str.contains("Total", case=False, na=False)
 
+    # Vista previa antes del filtro de porcentaje
+    st.write("📋 Tabla histórica antes del filtro:", tabla.head())
+
+    # Filtrar las filas que tienen el % en formato válido
     tabla = tabla[tabla["Atendidas_%"].astype(str).str.contains("%", na=False)]
 
+    if tabla.empty:
+        st.warning("⚠️ Todas las filas fueron eliminadas tras filtrar Atendidas_% con '%'.")
+        return pd.DataFrame()
+
+    # Limpiar y convertir porcentaje
     tabla["Atendidas_%"] = (
-        tabla["Atendidas_%"].astype(str)
+        tabla["Atendidas_%"]
+        .astype(str)
         .str.replace(",", ".")
         .str.replace(" %", "", regex=False)
         .astype(float)
     )
 
-    st.write("📋 Vista previa de la tabla histórica procesada:")
-    st.dataframe(tabla)
-
-    time.sleep(5)
-
+    st.write("✅ Tabla histórica final:", tabla.head())
     return tabla.reset_index(drop=True)
 
 def extraer_tabla_categorias(path_excel: str) -> pd.DataFrame:
