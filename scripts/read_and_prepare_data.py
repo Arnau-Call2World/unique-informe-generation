@@ -37,6 +37,7 @@ def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
 
 def extraer_tabla_categorias(path_excel: str) -> pd.DataFrame:
     try:
+        path_excel.seek(0)  # Asegurarse de que el archivo se lea desde el principio
         df = pd.read_csv(path_excel, encoding='ISO-8859-1', delimiter=';')
         st.write("✅ CSV de categorías cargado correctamente. Shape:", df.shape)
     except Exception as e:
