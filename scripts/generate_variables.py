@@ -48,14 +48,33 @@ def generar_grafico_meses_barplot_dinamico(
     comparando el porcentaje de atendidas.
     Devuelve la figura (sin mostrarla).
     """
-    valores = [
-        tablas[mes][tablas[mes]["Categoría"] == "Total"]["Atendidas_%"].astype(float).iloc[0]
-        for mes in meses
-    ]
+    valores = []
+    meses_validos = []
+
+    for mes in meses:
+        df_mes = tablas.get(mes)
+        if df_mes is not None:
+            df_total = df_mes[df_mes["Categoría"] == "Total"]
+            if not df_total.empty:
+                try:
+                    valor = df_total["Atendidas_%"].astype(float).iloc[0]
+                    valores.append(valor)
+                    meses_validos.append(mes)
+                except Exception as e:
+                    st.warning(f"⚠️ No se pudo procesar el mes {mes}: {e}")
+            else:
+                st.warning(f"⚠️ No se encontró 'Total' en el mes {mes}")
+        else:
+            st.warning(f"⚠️ No hay datos para el mes {mes}")
+
+    if not valores:
+        st.error("❌ No se pudo generar el gráfico: no hay datos válidos.")
+        return plt.figure()
+
     colores = ['green' if v >= 85 else 'red' for v in valores]
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(meses, valores, color=colores)
+    bars = ax.bar(meses_validos, valores, color=colores)
     ax.set_title("Estadísticas Año 2025")
     ax.set_ylim(0, 100)
     ax.grid(axis='y', linestyle='--', alpha=0.7)
