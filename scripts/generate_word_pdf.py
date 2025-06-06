@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx2pdf import convert
 import pandas as pd
 import os
 
@@ -132,27 +131,22 @@ def exportar_informe_word_y_pdf_por_bloques(
         doc.save(tmp_word.name)
         tmp_word_path = tmp_word.name
 
-    # Convertir a PDF
-    tmp_pdf_path = tmp_word_path.replace(".docx", ".pdf")
-    convert(tmp_word_path, tmp_pdf_path)
 
     # Cargar Word y PDF en memoria
     with open(tmp_word_path, "rb") as f:
         word_bytes = BytesIO(f.read())
-    with open(tmp_pdf_path, "rb") as f:
-        pdf_bytes = BytesIO(f.read())
+
 
     # Eliminar temporales
     os.remove(tmp_word_path)
-    os.remove(tmp_pdf_path)
     if temp_img_path and os.path.exists(temp_img_path):
         os.remove(temp_img_path)
 
     # Retroceder punteros
     word_bytes.seek(0)
-    pdf_bytes.seek(0)
 
-    return word_bytes, pdf_bytes
+
+    return word_bytes
 
 def main(mes_actual, categorias_csv, dias_csv, franjas_csv, historico_xlsx):
     meses_hasta_ahora = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO"]
