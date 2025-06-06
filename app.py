@@ -2,6 +2,7 @@ import streamlit as st
 from io import BytesIO
 from scripts.generate_word_pdf import main
 import pandas as pd
+import openpyxl
 
 st.set_page_config(page_title="Generador de Informes", layout="centered")
 st.title("📊 Generador de Informes Automáticos")
@@ -34,6 +35,9 @@ if csv3 is not None:
 
 
 excel = st.file_uploader("historico", type=["xlsx", "xls"])
+excel.seek(0)
+wb = openpyxl.load_workbook(excel, read_only=True)
+st.write("📄 Hojas disponibles en el Excel:", wb.sheetnames)
 mes = st.text_input("Mes (ej. 'ENERO')")
 
 if st.button("Generar informe") and all([csv1, csv2, csv3, excel, mes]):
