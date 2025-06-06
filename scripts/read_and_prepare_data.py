@@ -100,6 +100,7 @@ def extraer_tabla_dias(path_excel: str) -> pd.DataFrame:
     }
 
     # Leer la primera hoja del Excel
+    path_excel.seek(0)
     df = pd.read_csv(path_excel, encoding='ISO-8859-1', delimiter=';')
 
     # Seleccionar columnas relevantes
@@ -140,6 +141,7 @@ def extraer_tabla_franjas(path_excel: str) -> pd.DataFrame:
     Extrae y limpia la tabla por franja horaria desde un DataFrame.
     Detecta si la fila está escrita en rojo, incluye columna EsTotal y limpia %.
     """
+    path_excel.seek(0)
     df = pd.read_csv(path_excel, encoding='ISO-8859-1', delimiter=';')
 
 
