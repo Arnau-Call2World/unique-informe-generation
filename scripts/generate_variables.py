@@ -44,26 +44,22 @@ def generar_grafico_meses_barplot_dinamico(
     meses: list[str]
 ) -> plt.Figure:
     """
-    Genera un gráfico de barras para todos los meses disponibles en la lista `meses`,
-    comparando el porcentaje de atendidas.
-    Devuelve la figura (sin mostrarla).
+    Genera un gráfico de barras para todos los meses disponibles,
+    usando el último valor de 'Atendidas_%' de cada DataFrame.
     """
+
     valores = []
     meses_validos = []
 
     for mes in meses:
         df_mes = tablas.get(mes)
-        if df_mes is not None:
-            df_total = df_mes[df_mes["Categoría"] == "Total"]
-            if not df_total.empty:
-                try:
-                    valor = df_total["Atendidas_%"].astype(float).iloc[0]
-                    valores.append(valor)
-                    meses_validos.append(mes)
-                except Exception as e:
-                    st.warning(f"⚠️ No se pudo procesar el mes {mes}: {e}")
-            else:
-                st.warning(f"⚠️ No se encontró 'Total' en el mes {mes}")
+        if df_mes is not None and not df_mes.empty:
+            try:
+                valor = df_mes["Atendidas_%"].astype(float).iloc[-1]
+                valores.append(valor)
+                meses_validos.append(mes)
+            except Exception as e:
+                st.warning(f"⚠️ Error procesando el mes {mes}: {e}")
         else:
             st.warning(f"⚠️ No hay datos para el mes {mes}")
 
