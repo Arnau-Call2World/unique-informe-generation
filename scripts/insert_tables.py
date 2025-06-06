@@ -59,7 +59,6 @@ def insertar_tabla_franjas(doc: Document, df: pd.DataFrame):
     df_filtrado = df.iloc[:-1]
     df_filtrado = df_filtrado[(df_filtrado["Atendidas_%"] < 85.0) & (df_filtrado["Atendidas_%"] > 0)]
 
-
     table = doc.add_table(rows=1, cols=len(columnas))
     table.style = 'Table Grid'
 
@@ -67,7 +66,7 @@ def insertar_tabla_franjas(doc: Document, df: pd.DataFrame):
     for i, col in enumerate(columnas_titulo):
         hdr_cells[i].text = col
 
-    for _, row in df.iterrows():
+    for _, row in df_filtrado.iterrows():  # ← Aquí el cambio
         row_cells = table.add_row().cells
         for i, col in enumerate(columnas):
             if col == "Atendidas_%":
