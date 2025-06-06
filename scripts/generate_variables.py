@@ -1,6 +1,9 @@
 import os 
 import sys
 
+import streamlit as st
+
+
 # Añadir el directorio padre al path para importar correctamente
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -72,22 +75,29 @@ def generar_variables_informe(
     Genera las variables necesarias para el informe a partir de las tablas de categorías.
     """
 
+    st.write("📌 Paso 1: empezando a leer tablas...")
+
+    # ← Esto puede lanzar el error
     tablas, tablas_mes, excel = leer_tablas(path_paquete, meses)
+    st.write("✅ Paso 2: tablas leídas correctamente")
 
     categorias_df = tablas['categorias']
+    st.write("✅ Paso 3: df de categorías leído", categorias_df.head())
+
     categorias_anterior_df = tablas_mes[meses[-2]]
+    st.write("✅ Paso 4: df del mes anterior leído", categorias_anterior_df.head())
 
     variables_informe = sacar_variables_informe(
         categorias_df, 
         categorias_anterior_df
     )
-    
+    st.write("✅ Paso 5: variables del informe calculadas")
+
     tablas_mes[mes_actual] = categorias_df
-
     fig = generar_grafico_meses_barplot_dinamico(tablas_mes, meses)
+    st.write("✅ Paso 6: gráfico generado")
 
-    return variables_informe , fig , tablas, excel
-
+    return variables_informe, fig, tablas, excel
 if __name__ == "__main__":
     MESES = [ "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
                        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE" ]
