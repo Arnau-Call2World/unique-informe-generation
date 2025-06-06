@@ -158,7 +158,7 @@ def main(mes_actual, categorias_csv, dias_csv, franjas_csv, historico_xlsx):
         meses_hasta_ahora,
         mes_actual
     )
-
+    
     cuerpo = generar_correo_informe(
         mes=mes_actual,
         año=2025,
