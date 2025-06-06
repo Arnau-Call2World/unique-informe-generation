@@ -172,14 +172,14 @@ def main(mes_actual, categorias_csv, dias_csv, franjas_csv, historico_xlsx):
         resumen_dias_flojos="[TABLA_DIAS]",
         resumen_franjas_flojas="[TABLA_FRANJAS]"
     )
-    word_path, pdf_path = exportar_informe_word_y_pdf_por_bloques(
+    word_path = exportar_informe_word_y_pdf_por_bloques(
         texto_informe=cuerpo,
         tabla_categorias=tablas['categorias'],
         tabla_dias=tablas['dias'],
         tabla_franjas=tablas['franjas'],
         fig=fig
     )
-    return word_path, pdf_path
+    return word_path
 
 
 
