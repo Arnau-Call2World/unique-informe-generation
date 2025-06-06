@@ -139,39 +139,80 @@ def extraer_tabla_franjas(path_excel: str) -> pd.DataFrame:
 
     return tabla.reset_index(drop=True), df
 
+import pandas as pd
+import streamlit as st
+
 def leer_tablas(path_paquete: str, meses: list[str]) -> dict:
     """
     Lee las tablas de categorías, días y franjas horarias desde un archivo Excel.
     """
+    st.write("📥 Paso 1: Accediendo a paths individuales")
     path_excel_historico = path_paquete[3]
-    path_excel_cateorias = path_paquete[0]
+    path_excel_categorias = path_paquete[0]
     path_excel_dias = path_paquete[1]
     path_excel_franjas = path_paquete[2]
 
+    st.write("✅ Paths extraídos correctamente")
+
     tablas_mes = {}
     for m in meses[:-1]:  # Excluimos el mes actual
-        df = pd.read_excel(path_excel_historico, sheet_name=m, header=None)
-        tablas_mes[m] = extraer_tabla_historico(df)
+        st.write(f"📊 Leyendo hoja histórica del mes: {m}")
+        try:
+            df = pd.read_excel(path_excel_historico, sheet_name=m, header=None)
+            tablas_mes[m] = extraer_tabla_historico(df)
+            st.write(f"✅ Hoja '{m}' leída correctamente con shape {df.shape}")
+        except Exception as e:
+            st.error(f"❌ Error al leer hoja '{m}': {e}")
+            raise
 
-    categorias_filtrdo, df_categorias = extraer_tabla_categorias(path_excel_cateorias)
-    dias_filtrado, df_dias = extraer_tabla_dias(path_excel_dias)
-    franjas_filtrado, df_franjas = extraer_tabla_franjas(path_excel_franjas)
+    st.write("📌 Paso 2: leyendo tablas individuales...")
+
+    try:
+        categorias_filtrado, df_categorias = extraer_tabla_categorias(path_excel_categorias)
+        st.write("✅ Tabla de categorías leída:", df_categorias.shape)
+    except Exception as e:
+        st.error(f"❌ Error en categorías: {e}")
+        raise
+
+    try:
+        dias_filtrado, df_dias = extraer_tabla_dias(path_excel_dias)
+        st.write("✅ Tabla de días leída:", df_dias.shape)
+    except Exception as e:
+        st.error(f"❌ Error en días: {e}")
+        raise
+
+    try:
+        franjas_filtrado, df_franjas = extraer_tabla_franjas(path_excel_franjas)
+        st.write("✅ Tabla de franjas leída:", df_franjas.shape)
+    except Exception as e:
+        st.error(f"❌ Error en franjas: {e}")
+        raise
 
     tablas = {
-        "categorias": categorias_filtrdo,
+        "categorias": categorias_filtrado,
         "dias": dias_filtrado,
         "franjas": franjas_filtrado
     }
 
-    excel = append_dfs_to_excel_path(
-        path_excel_historico,
-        df_categorias,
-        df_dias,
-        df_franjas,
-        sheet_name=meses[-1]  # Último mes
-    )
+    st.write("📌 Paso 3: Generando Excel con resumen")
+
+    try:
+        excel = append_dfs_to_excel_path(
+            path_excel_historico,
+            df_categorias,
+            df_dias,
+            df_franjas,
+            sheet_name=meses[-1]  # Último mes
+        )
+        st.write("✅ Excel actualizado generado correctamente")
+    except Exception as e:
+        st.error(f"❌ Error al generar Excel actualizado: {e}")
+        raise
+
+    st.write("✅ Todas las tablas leídas y procesadas correctamente")
 
     return tablas, tablas_mes, excel
+
 
 
 def append_dfs_to_excel_path(excel_path: str, df1, df2, df3, sheet_name="Resumen") -> BytesIO:
