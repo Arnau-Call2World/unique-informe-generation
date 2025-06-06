@@ -10,18 +10,28 @@ st.markdown("Sube los tres CSVs, el Excel y escribe el mes correspondiente para 
 
 csv1 = st.file_uploader("categorias", type=["csv"])
 if csv1 is not None:
-    df1 = pd.read_csv(csv1)
-    st.write("Categorías CSV preview", df1.head())
+    try:
+        df1 = pd.read_csv(csv1)
+        st.write("Categorías CSV preview", df1.head())
+    except Exception as e:
+        st.error(f"Error leyendo CSV de categorías: {e}")
 
 csv2 = st.file_uploader("dias", type=["csv"])
 if csv2 is not None:
-    df2 = pd.read_csv(csv2)
-    st.write("Días CSV preview", df2.head())
+    try:
+        df2 = pd.read_csv(csv2)
+        st.write("Días CSV preview", df2.head())
+    except Exception as e:
+        st.error(f"Error leyendo CSV de días: {e}")
 
 csv3 = st.file_uploader("franjas", type=["csv"])
 if csv3 is not None:
-    df3 = pd.read_csv(csv3)
-    st.write("Franjas CSV preview", df3.head())
+    try:
+        df3 = pd.read_csv(csv3)
+        st.write("Franjas CSV preview", df3.head())
+    except Exception as e:
+        st.error(f"Error leyendo CSV de franjas: {e}")
+
 
 excel = st.file_uploader("historico", type=["xlsx", "xls"])
 mes = st.text_input("Mes (ej. 'ENERO')")
