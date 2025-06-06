@@ -5,6 +5,8 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
 
 
+import time
+
 def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
     """
     Extrae y limpia la tabla de resumen por categorías desde un DataFrame.
@@ -16,22 +18,21 @@ def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
     tabla.columns = ["Categoría", "Recibidas", "Atendidas_num", "Atendidas_%", "Duracion",
                      "Desborde_cantidad", "Desborde_tiempo", "Abandonadas"]
 
-    # Marcar fila 'Total'
     tabla["EsTotal"] = tabla["Categoría"].astype(str).str.contains("Total", case=False, na=False)
 
-    # Marcar si es roja según openpyxl (usamos índice original)
-
-
-    # Filtrar solo las que tienen % válido
     tabla = tabla[tabla["Atendidas_%"].astype(str).str.contains("%", na=False)]
 
-    # Limpiar y convertir valores
     tabla["Atendidas_%"] = (
         tabla["Atendidas_%"].astype(str)
         .str.replace(",", ".")
         .str.replace(" %", "", regex=False)
         .astype(float)
     )
+
+    st.write("📋 Vista previa de la tabla histórica procesada:")
+    st.dataframe(tabla)
+
+    time.sleep(5)
 
     return tabla.reset_index(drop=True)
 
