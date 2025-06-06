@@ -36,26 +36,46 @@ def extraer_tabla_historico(df: pd.DataFrame) -> pd.DataFrame:
     return tabla.reset_index(drop=True)
 
 def extraer_tabla_categorias(path_excel: str) -> pd.DataFrame:
+    try:
+        df = pd.read_csv(path_excel, encoding='ISO-8859-1', delimiter=';')
+        st.write("✅ CSV de categorías cargado correctamente. Shape:", df.shape)
+    except Exception as e:
+        st.error(f"❌ Error al leer el CSV de categorías: {e}")
+        raise
 
-    df = pd.read_csv(path_excel, encoding='ISO-8859-1', delimiter=';')
+    try:
+        tabla = df.iloc[:, [0, 1, 4, 5, 6, 18, 19, 21]].copy()
+        tabla.columns = [
+            "Categoría", "Recibidas", "Atendidas_num", "Atendidas_%",
+            "Duracion", "Desborde_cantidad", "Desborde_tiempo", "Abandonadas"
+        ]
+        st.write("📊 Tabla extraída con columnas:", tabla.columns.tolist())
+    except Exception as e:
+        st.error(f"❌ Error al seleccionar columnas específicas del CSV: {e}")
+        raise
 
-    
-    print("Hojas disponibles")
-    tabla = df.iloc[:, [0, 1, 4, 5, 6, 18, 19, 21]].copy()
-    tabla.columns = ["Categoría", "Recibidas", "Atendidas_num", "Atendidas_%", "Duracion",
-                     "Desborde_cantidad", "Desborde_tiempo", "Abandonadas"]
-    # Limpiar y convertir porcentaje
-    tabla = tabla[tabla["Atendidas_%"].astype(str).str.contains("%", na=False)]
+    try:
+        # Filtrar solo las filas con % válidos
+        tabla_filtrada = tabla[tabla["Atendidas_%"].astype(str).str.contains("%", na=False)]
+        st.write("🔍 Filtrado filas con porcentaje válido. Filas antes:", len(tabla), "→ después:", len(tabla_filtrada))
+    except Exception as e:
+        st.error(f"❌ Error al filtrar filas con '%': {e}")
+        raise
 
-    tabla["Atendidas_%"] = (
-        tabla["Atendidas_%"]
-        .astype(str)
-        .str.replace(",", ".")
-        .str.replace(" %", "", regex=False)
-        .astype(float)
-    )
+    try:
+        tabla_filtrada["Atendidas_%"] = (
+            tabla_filtrada["Atendidas_%"]
+            .astype(str)
+            .str.replace(",", ".")
+            .str.replace(" %", "", regex=False)
+            .astype(float)
+        )
+        st.write("✅ Columna 'Atendidas_%' convertida a float correctamente")
+    except Exception as e:
+        st.error(f"❌ Error al convertir 'Atendidas_%' a float: {e}")
+        raise
 
-    return tabla.reset_index(drop=True), df
+    return tabla_filtrada.reset_index(drop=True), df
     
 
 import pandas as pd
